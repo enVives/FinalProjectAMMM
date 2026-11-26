@@ -10,8 +10,8 @@ int P[1..N] = ...;
 int E[1..N] = ...;
 
 range Nperiods = 1..N;
-range Uperiods = 1..U+1;
-range Lperiods = 1..L+1;
+range Uperiods = 0..U;
+range Lperiods = 0..L-1;
 
 // Define here your decision variables and
 // any other auxiliary OPL variables you need.
@@ -78,8 +78,10 @@ subject to {
     y[1] >= s[1] - 0;
     
     // IF s[n-1] = 0 and s[n] = 1 then y[n] = 1
-    forall(n in Nperiods : n>1)
-      y[n] >= s[n] - s[n-1];
+    forall(n in Nperiods : n>1){
+      y[n] >= s[n] * (1 - s[n-1]);
+      y[n] <= s[n] * (1 - s[n-1]);
+    }
 	
 	//MINIMUM PROFIT THRESHOLD
     sum(n in Nperiods)
@@ -87,13 +89,13 @@ subject to {
     
     //MAXIMUM NUMBER OF ON'S
     forall(n in Nperiods)
-      sum(m in Uperiods: m>=n) //m starts at n
-        s[n] <= U;
+      sum(m in Uperiods: m+n <= N) //m starts at n
+        s[n+m] <= U;
 	
 	//MINIMUM NUMBER OF ON'S
 	forall(n in Nperiods)
-	  sum(m in Lperiods: m>= n)
-	    s[m] >= L * y[n]; // the sum of m only matters if we are at the start of a running
+	  sum(m in Lperiods: m+n <= N)
+	    s[m+n] >= L * y[n]; // the sum of m only matters if we are at the start of a running
 	    
 	
 	//MINIMIXE THE SUM OF ENERGY COST
